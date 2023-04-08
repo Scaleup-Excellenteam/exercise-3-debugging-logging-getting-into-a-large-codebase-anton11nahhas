@@ -154,7 +154,6 @@ def main():
                     else:
                         square_selected = (row, col)
                         player_clicks.append(square_selected)
-                        logging.info(f"number of clicks {player_clicks}")
                     if len(player_clicks) == 2:
                         # this if is useless right now
                         if (player_clicks[1][0], player_clicks[1][1]) not in valid_moves:
@@ -194,12 +193,15 @@ def main():
 
         endgame = game_state.checkmate_stalemate_checker()
         if endgame == 0:
+            logging.info("black Wins!")
             game_over = True
             draw_text(screen, "Black wins.")
         elif endgame == 1:
+            logging.info("white Wins!")
             game_over = True
             draw_text(screen, "White wins.")
         elif endgame == 2:
+            logging.info("stalemate (draw)")
             game_over = True
             draw_text(screen, "Stalemate.")
 
