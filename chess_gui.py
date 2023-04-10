@@ -205,6 +205,7 @@ def main():
             game_over = True
             draw_text(screen, "Stalemate.")
 
+
         clock.tick(MAX_FPS)
         py.display.flip()
 
@@ -214,7 +215,9 @@ def main():
             if game_state.is_valid_piece(i,j):
                 remaining += 1
 
+    logging.info(f"Knights have moved {game_state.knights_moves} times in total.")
     logging.info(f"number of remaining pieces: {remaining}")
+    logging.info(f"total number of checks in game: {game_state.num_of_checks}.")
 
 
 

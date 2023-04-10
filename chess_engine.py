@@ -50,6 +50,10 @@ class game_state:
                                       True]  # Has king not moved, has Rook1(col=0) not moved, has Rook2(col=7) not moved
         self.black_king_can_castle = [True, True, True]
 
+        self.knights_moves = 0
+        self.num_of_checks = 0
+        self.lock = False
+
         # Initialize White pieces
         white_rook_1 = Rook('r', 0, 0, Player.PLAYER_1)
         white_rook_2 = Rook('r', 0, 7, Player.PLAYER_1)
@@ -331,6 +335,8 @@ class game_state:
 
             if ending_square in valid_moves:
                 moved_to_piece = self.get_piece(next_square_row, next_square_col)
+                if moving_piece.get_name() is "n":
+                    self.knights_moves += 1
                 if moving_piece.get_name() is "k":
                     if moving_piece.is_player(Player.PLAYER_1):
                         if moved_to_piece == Player.EMPTY and next_square_col == 1 and self.king_can_castle_left(
@@ -399,7 +405,7 @@ class game_state:
                             self.move_log.append(move)
                             self.black_king_can_castle[0] = False
                         self._black_king_location = (next_square_row, next_square_col)
-                        # self.can_en_passant_bool = False  WHAT IS THIS
+                        # self.can_en_passant_bool = False
                 elif moving_piece.get_name() is "r":
                     if moving_piece.is_player(Player.PLAYER_1) and current_square_col == 0:
                         self.white_king_can_castle[1] = False
@@ -857,6 +863,8 @@ class game_state:
                     # self._is_check = True
                     _checks.append((king_location_row + row_change[i], king_location_col + col_change[i]))
         # print([_checks, _pins, _pins_check])
+        if len(_checks) > 0:
+            self.num_of_checks = len(_checks)
         return [_checks, _pins, _pins_check]
 
 
@@ -866,6 +874,7 @@ class chess_move():
         self.starting_square_col = starting_square[1]
         self.moving_piece = game_state.get_piece(self.starting_square_row, self.starting_square_col)
         self.in_check = in_check
+
 
         self.ending_square_row = ending_square[0]
         self.ending_square_col = ending_square[1]
@@ -885,6 +894,8 @@ class chess_move():
         self.en_passaned = False
         self.en_passant_eaten_piece = None
         self.en_passant_eaten_square = None
+
+
 
     def castling_move(self, rook_starting_square, rook_ending_square, game_state):
         self.castled = True
