@@ -7,9 +7,13 @@
 #
 import chess_engine
 import pygame as py
+import logging
 
 import ai_engine
 from enums import Player
+
+logging.basicConfig(level=logging.INFO, filename="log.log", filemode="w",
+                    format="%(asctime)s - %(levelname)s %(message)s")
 
 """Variables"""
 WIDTH = HEIGHT = 512  # width and height of the chess board
@@ -18,6 +22,7 @@ SQ_SIZE = HEIGHT // DIMENSION  # the size of each of the squares in the board
 MAX_FPS = 15  # FPS for animations
 IMAGES = {}  # images for the chess pieces
 colors = [py.Color("white"), py.Color("gray")]
+
 
 # TODO: AI black has been worked on. Mirror progress for other two modes
 def load_images():
@@ -69,7 +74,10 @@ def highlight_square(screen, game_state, valid_moves, square_selected):
     if square_selected != () and game_state.is_valid_piece(square_selected[0], square_selected[1]):
         row = square_selected[0]
         col = square_selected[1]
-
+        if game_state.whose_turn():
+            logging.info("white's turn")
+        else:
+            logging.info("black's turn")
         if (game_state.whose_turn() and game_state.get_piece(row, col).is_player(Player.PLAYER_1)) or \
                 (not game_state.whose_turn() and game_state.get_piece(row, col).is_player(Player.PLAYER_2)):
             # hightlight selected square
@@ -122,12 +130,18 @@ def main():
     ai = ai_engine.chess_ai()
     game_state = chess_engine.game_state()
     if human_player is 'b':
+        logging.info("the computer is starting")
         ai_move = ai.minimax_black(game_state, 3, -100000, 100000, True, Player.PLAYER_1)
+        game_state.move_piece(ai_move[0], ai_move[1], True)
+    elif human_player is 'w':
+        logging.info("the human is starting")
+        ai_move = ai.minimax_white(game_state, 3, -100000, 100000, True, Player.PLAYER_2)
         game_state.move_piece(ai_move[0], ai_move[1], True)
 
     while running:
         for e in py.event.get():
             if e.type == py.QUIT:
+                logging.info("exiting the game")
                 running = False
             elif e.type == py.MOUSEBUTTONDOWN:
                 if not game_over:
@@ -179,17 +193,36 @@ def main():
 
         endgame = game_state.checkmate_stalemate_checker()
         if endgame == 0:
+            logging.info("black Wins!")
             game_over = True
             draw_text(screen, "Black wins.")
         elif endgame == 1:
+            logging.info("white Wins!")
             game_over = True
             draw_text(screen, "White wins.")
         elif endgame == 2:
+            logging.info("stalemate (draw)")
             game_over = True
             draw_text(screen, "Stalemate.")
 
+
         clock.tick(MAX_FPS)
         py.display.flip()
+
+    remaining = 0
+    for i in range(0,8):
+        for j in range(0,8):
+            if game_state.is_valid_piece(i,j):
+                remaining += 1
+
+    logging.info(f"Knights have moved {game_state.knights_moves} times in total.")
+    logging.info(f"number of remaining pieces: {remaining}")
+    logging.info(f"total number of checks in game: {game_state.num_of_checks}.")
+
+
+
+
+
 
     # elif human_player is 'w':
     #     ai = ai_engine.chess_ai()
