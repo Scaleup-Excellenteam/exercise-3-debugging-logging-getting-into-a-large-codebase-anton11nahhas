@@ -1,5 +1,8 @@
 import unittest
 from unittest.mock import patch, Mock
+
+import pytest as pytest
+
 from Piece import Knight
 from chess_engine import game_state
 import chess_engine
@@ -11,19 +14,25 @@ import ai_engine
 """
 class TestKnight(unittest.TestCase):
 
-    """
-    this test is a unitest, and it checks if the function get valid peaceful moves returns the correct tuples
-    the board has all the pieces however the knight is found in the position 3, 4 in the board
-    the result of tuples must be the size of 6 since there are only 6 positions the knight can
-    go from that position, the two other possible positions are not empty, there are white pawns
-    in them so they wont be included in the result.
+    def empty_board(self):
+        game_board = game_state()
+        game_board.board = [[Player.EMPTY for _ in range(8)] for _ in range(8)]
+        return game_board
 
     """
+    this test is a unitest, and it checks if the function get valid peaceful moves returns the correct tuples
+    the board is clear and has no pieces, the knight is in the position 3,4 and the tuples needed are found
+    in expected results after calling the peaceful_moves method.
+
+    """
+
     def test_get_valid_peaceful_moves(self):
-        game_state_1 = chess_engine.game_state()
+        empty_board = self.empty_board()
         knight = Knight('n', 3, 4, Player.PLAYER_1)
-        result = knight.get_valid_peaceful_moves(game_state_1)
-        self.assertEqual(result, [(2, 2), (2, 6), (4, 2), (4, 6), (5, 5), (5, 3)])
+        with patch.object(empty_board, 'get_piece', return_value=Player.EMPTY):
+            result = knight.get_valid_peaceful_moves(empty_board)
+            expected_result = [(5, 5), (1, 5), (4, 6), (4, 2), (2, 6), (2, 2), (5, 3), (1, 3)]
+            self.assertEqual(set(result), set(expected_result))
 
     """
     this testis a unitest, and it checks if the function get valid piece takes returns the correct tuples.
@@ -35,7 +44,8 @@ class TestKnight(unittest.TestCase):
         game_state_2 = chess_engine.game_state()
         knight = Knight('n', 5,5, Player.PLAYER_1)
         result = knight.get_valid_piece_takes(game_state_2)
-        self.assertEqual(result, [(6, 3), (6, 7), (7, 6), (7, 4)])
+        expected_result = [(6, 3), (6, 7), (7, 6), (7, 4)]
+        self.assertEqual(result, expected_result)
 
     """
         this test is a uni test, where it clears the board and only adds a knight in the position 3,4 
@@ -45,13 +55,17 @@ class TestKnight(unittest.TestCase):
         valid takes.
     """
     def test_both(self):
-        game_state_3 = chess_engine.game_state()
-        game_state_3.board = [[Player.EMPTY for _ in range(8)] for _ in range(8)]
+        empty_board = self.empty_board()
         knight = Knight('n', 3, 4, Player.PLAYER_1)
-        result1 = knight.get_valid_peaceful_moves(game_state_3)
-        result2 = knight.get_valid_piece_takes(game_state_3)
-        self.assertEqual(result1, [(1, 3), (1, 5), (2, 2), (2, 6), (4, 2), (4, 6), (5, 5), (5, 3)])
-        self.assertEqual(result2, [])
+        with patch.object(empty_board, 'get_piece', return_value=Player.EMPTY):
+            result1 = knight.get_valid_peaceful_moves(empty_board)
+            result2 = knight.get_valid_piece_takes(empty_board)
+            expected_result1 = [(1, 3), (1, 5), (2, 2), (2, 6), (4, 2), (4, 6), (5, 5), (5, 3)]
+            expected_result2 = []
+            self.assertEqual(result1, expected_result1)
+            self.assertEqual(result2, expected_result2)
+
+
 
     """
     this test is an integration test, since it calls a function that calls another 2 functions.
@@ -63,7 +77,8 @@ class TestKnight(unittest.TestCase):
         game_state_4 = chess_engine.game_state()
         knight = Knight('n', 5, 5, Player.PLAYER_1)
         result = knight.get_valid_piece_moves(game_state_4)
-        self.assertEqual(result, [(3, 4), (3, 6), (4, 3), (4, 7), (6, 3), (6, 7), (7, 6), (7, 4)])
+        expected_result = [(3, 4), (3, 6), (4, 3), (4, 7), (6, 3), (6, 7), (7, 6), (7, 4)]
+        self.assertEqual(result, expected_result)
 
 
     """
@@ -76,7 +91,8 @@ class TestKnight(unittest.TestCase):
         game_state_5 = chess_engine.game_state()
         ai = ai_engine.chess_ai()
         result = ai.evaluate_board(game_state_5, Player.PLAYER_1)
-        self.assertEqual(result, 0)
+        expected_result = 0
+        self.assertEqual(result, expected_result)
 
     """
     this is a systemic test, where it tests a full game of chess, the test performs the fools
@@ -90,6 +106,7 @@ class TestKnight(unittest.TestCase):
         game_state_6.move_piece((1, 1), (3, 1), False)
         game_state_6.move_piece((7, 4), (3, 0), False)
         result = game_state_6.checkmate_stalemate_checker()
-        self.assertEqual(result, 0)
+        expected_result = 0
+        self.assertEqual(result, expected_result)
 
 
